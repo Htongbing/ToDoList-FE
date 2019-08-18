@@ -1,12 +1,22 @@
 import React, { Component } from 'react';
 import { Form, Input, Icon, Button } from 'antd'
 import './index.scss';
+import { login } from '../../api'
 
 class Login extends Component {
-  login = () => {
-    this.props.form.validateFields((err, values) => {
-      !err && console.log(values)
+  validateFields = () => {
+    return new Promise((resolve, reject) => {
+      this.props.form.validateFields((err, values) => {
+        !err ? resolve(values) : reject(err)
+      })
     })
+  }
+  login = async () => {
+    try {
+      const values = await this.validateFields()
+      const token = await login(values)
+      console.log(token)
+    } catch (e) {}
   }
   render() {
     const { getFieldDecorator } = this.props.form
