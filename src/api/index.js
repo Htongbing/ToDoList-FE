@@ -5,3 +5,11 @@ export const login = ({username, password}) =>
     username,
     password
   })
+
+export const register = ({account, password, email, verification_code}) => 
+  axios.post('/users/signUp', {
+    account,
+    password,
+    email,
+    verification_code
+  })
