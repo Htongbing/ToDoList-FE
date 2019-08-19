@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Form, Button, Input, Spin } from 'antd'
+import { Form, Button, Input, Spin, message } from 'antd'
 import './index.scss'
 import { register } from '../../api'
 import { ACCOUNT_RE, PASSWORD_RE } from '../../const'
@@ -16,6 +16,9 @@ class Register extends Component {
   changeVerificationImg = () => {
     this.setState({ verificationImgLoading: true })
     this.verificationImg.setAttribute('src', `/codes?_=${Date.now()}${Math.random()}`)
+  }
+  closeImgLoading = () => {
+    this.setState({ verificationImgLoading: false })
   }
   handleConfirmBlur = e => {
     this.setState({
@@ -52,9 +55,12 @@ class Register extends Component {
     try {
       const values = await this.validateFields()
       await register(values)
-    } catch (e) {}
-    this.changeVerificationImg()
-    this.setState({ loading: false })
+      message.success('注册成功')
+      this.props.history.push('/login')
+    } catch (e) {
+      e instanceof Error && this.changeVerificationImg()
+      this.state.loading && this.setState({ loading: false })
+    }
   }
   render() {
     const { getFieldDecorator } = this.props.form
@@ -101,7 +107,7 @@ class Register extends Component {
               <Form.Item>
                 <Spin spinning={this.state.verificationImgLoading}>
                   <div className="verification-container">
-                    <img src="/codes" alt="验证码" ref={verificationImg => this.verificationImg = verificationImg} onLoad={() => { this.setState({ verificationImgLoading: false }) }}></img>
+                    <img src="/codes" alt="验证码" ref={verificationImg => this.verificationImg = verificationImg} onLoad={this.closeImgLoading} onError={this.closeImgLoading}></img>
                     <span onClick={this.changeVerificationImg}>看不清？换一张</span>
                   </div>
                 </Spin>
