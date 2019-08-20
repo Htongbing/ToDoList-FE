@@ -14,6 +14,11 @@ axios.interceptors.response.use(function (response) {
   return Promise.reject(new Error(message))
 }, function (error) {
   console.log(error)
+  notification.error({
+    message: '请求失败',
+    description: '系统维护中，请稍后重试',
+    duration: 2
+  })
   return Promise.reject(error)
 })
 
