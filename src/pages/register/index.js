@@ -10,7 +10,7 @@ class Register extends Component {
     confirmDirty: false,
     loading: false
   }
-  componentDidMount = () => {
+  componentDidMount() {
     this.changeVerificationImg()
   }
   changeVerificationImg = () => {
