@@ -3,6 +3,14 @@
   background-color: #fff;
 
   .search-container {
+    .ant-form-item {
+      margin-bottom: 20px;
+    }
+    
+    .ant-btn + .ant-btn {
+      margin-left: 16px;
+    }
+
     .ant-input:not(.ant-calendar-picker-input),
     .ant-select {
       width: 200px;
