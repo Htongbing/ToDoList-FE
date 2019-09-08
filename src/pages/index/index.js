@@ -2,14 +2,13 @@ import React, { Component } from 'react'
 import { Route } from 'react-router-dom'
 import Home from './home'
 import Setting from './setting'
-import { Layout, Icon, Popconfirm, Alert } from 'antd'
+import { Layout, Icon, Popconfirm } from 'antd'
 import './index.scss'
 const { Header, Content } = Layout
 
 class Index extends Component {
   state = {
     username: sessionStorage.getItem('username'),
-    emailStatus: sessionStorage.getItem('emailStatus'),
     routes: [
       {
         path: '/home',
@@ -30,9 +29,6 @@ class Index extends Component {
   logout = () => {
     sessionStorage.removeItem('token')
     this.props.history.push('/login')
-  }
-  hideEmailTip = () => {
-    sessionStorage.removeItem('emailStatus')
   }
   componentDidMount() {
     this.jump('/home')
@@ -60,7 +56,6 @@ class Index extends Component {
           </div>
         </Header>
         <Content className="index-content">
-          <Alert message="温馨提示" description="邮箱尚未验证，不能使用更改密码的功能，建议尽早到设置页面验证邮箱" type="warning" showIcon closable closeText="本次登录不再提醒" onClose={this.hideEmailTip} afterClose={() => { this.setState({ emailStatus: null }) }} className={this.state.emailStatus !== '0' ? 'hide' : ''}></Alert>
           {
             routes.map(({path, component}) => (
               <Route key={path} path={path} exact component={component}></Route>

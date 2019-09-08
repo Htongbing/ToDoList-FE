@@ -1,30 +1,18 @@
 import React, { Component } from 'react'
 import { Form, Input, Select, DatePicker, Button, Table } from 'antd'
+import { getTaskList } from '../../../api'
 import moment from 'moment'
 import 'moment/locale/zh-cn'
 import './index.scss'
 moment.locale('zh-cn')
 
 const { Option } = Select
-const STATUS = [
-  {
-    label: '未开始',
-    value: 0
-  },
-  {
-    label: '进行中',
-    value: 1
-  },
-  {
-    label: '已完成',
-    value: 2
-  }
-]
-const STATUS_MAP = {
-  0: '未开始',
-  1: '进行中',
-  2: '已完成'
+const STATUS = {
+  0: '未完成',
+  1: '已完成',
+  2: '已延期'
 }
+const statusOptions = Object.keys(STATUS).map(i => ({ label: STATUS[i], value: i }))
 
 class Search extends Component {
   search = () => {
@@ -55,7 +43,7 @@ class Search extends Component {
           <Form.Item label="任务状态">
             {getFieldDecorator('status')(<Select allowClear placeholder="请选择">
               {
-                STATUS.map(({label, value}) => (
+                statusOptions.map(({label, value}) => (
                   <Option key={value} value={value}>{label}</Option>
                 ))
               }
@@ -80,11 +68,18 @@ const SearchForm = Form.create({
 
 class Home extends Component {
   state = {
+    searchParams: {},
+    loading: false,
     columns: [
       {
         title: '任务名称',
         dataIndex: 'name',
         key: 'name'
+      },
+      {
+        title: '任务内容',
+        dataIndex: 'content',
+        key: 'content'
       },
       {
         title: '创建时间',
@@ -93,33 +88,56 @@ class Home extends Component {
         render: time => moment(time).format('YYYY-MM-DD HH:mm:ss')
       },
       {
+        title: '预计完成时间',
+        dataIndex: 'estimatedTime',
+        key: 'estimatedTime',
+        render: time => moment(time).format('YYYY-MM-DD HH:mm:ss')
+      },
+      {
         title: '任务状态',
         dataIndex: 'status',
         key: 'status',
         render: status => (
-          <div className={`status status-${status}`}>{STATUS_MAP[status]}</div>
+          <div className={`status status-${status}`}>{STATUS[status]}</div>
+        )
+      },
+      {
+        title: '操作',
+        key: 'operate',
+        render: () => (
+          <Button type="link">修改</Button>
         )
       }
     ],
-    data: [
-      {
-        key: 0,
-        name: '没钱',
-        createdTime: Date.now(),
-        status: 1
-      }
-    ]
+    data: [],
+    rowSelection: {}
+  }
+  componentDidMount() {
+    this.getList()
+  }
+  getList = async () => {
+    this.setState({ loading: true })
+    try {
+      const { data } = await getTaskList(this.state.searchParams)
+      data.forEach((item, index) => {
+        item.key = index
+      })
+      this.setState({ data })
+    } catch (e) {}
+    this.setState({ loading: false })
   }
   search = data => {
-    console.log(data)
+    this.setState({ searchParams: data }, () => {
+      this.getList()
+    })
   }
   render() {
-    const { columns, data } = this.state
+    const { columns, data, rowSelection, loading } = this.state
     return (
       <section className="home-container">
         <SearchForm search={this.search}></SearchForm>
         <section className="table-container">
-          <Table columns={columns} dataSource={data}></Table>
+          <Table loading={loading} rowSelection={rowSelection} columns={columns} dataSource={data}></Table>
         </section>
       </section>
     )
