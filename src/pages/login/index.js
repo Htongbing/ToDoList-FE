@@ -20,10 +20,11 @@ class Login extends Component {
     this.setState({ loading: true })
     try {
       const values = await this.validateFields()
-      const { token, account, emailStatus } = await login(values)
+      const { token, account, emailStatus, id } = await login(values)
       sessionStorage.setItem('token', token)
       sessionStorage.setItem('username', account)
       sessionStorage.setItem('emailStatus', emailStatus)
+      sessionStorage.setItem('userId', id)
       this.props.history.push('/')
     } catch (e) {
       e instanceof Error && this.setState({ loading: false })
@@ -48,7 +49,7 @@ class Login extends Component {
             </Form.Item>
             <Form.Item>
               <div className="link-container right">
-                <a href="#/forgot-password">忘记密码</a>
+                <a href="#/forgot">忘记密码</a>
               </div>
               <Button type="primary" block onClick={this.login} loading={this.state.loading}>登  录</Button>
               <div className="link-container">
