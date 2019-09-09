@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
-import { Form, Input, Select, DatePicker, Button, Table } from 'antd'
+import { Form, Input, Select, DatePicker, Button, Table, Modal } from 'antd'
 import { getTaskList } from '../../../api'
+import { TASK_NAME_RE, TASK_CONTENT_RE } from '../../../const'
 import moment from 'moment'
 import 'moment/locale/zh-cn'
 import './index.scss'
@@ -13,6 +14,11 @@ const STATUS = {
   2: '已延期'
 }
 const statusOptions = Object.keys(STATUS).map(i => ({ label: STATUS[i], value: i }))
+const DIALOG_TYPE = {
+  add: '添加',
+  edit: '修改',
+  view: '查看'
+}
 
 class Search extends Component {
   search = () => {
@@ -66,6 +72,38 @@ const SearchForm = Form.create({
   name: 'search_form'
 })(Search)
 
+class Dialog extends Component {
+  render() {
+    const { getFieldDecorator } = this.props.form
+    return (
+      <section className="dialog-form-container">
+        <Form labelCol={{ span: 4 }} wrapperCol={{ span: 20 }}>
+          <Form.Item label="任务名称">
+            {getFieldDecorator('name', {
+              rules: [
+                { required: true, message: '请输入任务名称' },
+                { pattern: TASK_NAME_RE, message: '任务名称不能包含特殊符号，且不能超过20个字符' }
+              ]
+            })(<Input placeholder="请输入任务名称"/>)}
+          </Form.Item>
+          <Form.Item label="任务内容">
+            {getFieldDecorator('content', {
+              rules: [
+                { required: true, message: '请输入任务内容' },
+                { pattern: TASK_CONTENT_RE, message: '任务内容不能包含特殊符号，且不能超过20个字符' }
+              ]
+            })(<Input.TextArea placeholder="请输入任务内容"/>)}
+          </Form.Item>
+        </Form>
+      </section>
+    )
+  }
+}
+
+const DialogForm = Form.create({
+  name: 'dialog_form'
+})(Dialog)
+
 class Home extends Component {
   state = {
     searchParams: {},
@@ -110,7 +148,8 @@ class Home extends Component {
       }
     ],
     data: [],
-    rowSelection: {}
+    rowSelection: {},
+    dialog: {}
   }
   componentDidMount() {
     this.getList()
@@ -131,14 +170,34 @@ class Home extends Component {
       this.getList()
     })
   }
+  openDialog = type => {
+    this.setState({ dialog: { type, visible: true } })
+  }
+  closeDialog = () => {
+    const { dialog } = this.state
+    if (dialog.confirmLoading) return
+    this.setState({
+      dialog: {
+        ...dialog,
+        visible: false
+      }
+    })
+  }
   render() {
-    const { columns, data, rowSelection, loading } = this.state
+    const { columns, data, rowSelection, loading, dialog: {type, visible, confirmLoading} } = this.state
     return (
       <section className="home-container">
         <SearchForm search={this.search}></SearchForm>
+        <section className="header-button-container">
+          <Button type="primary" onClick={() => { this.openDialog('add') }}>添加</Button>
+          <Button type="danger">删除</Button>
+        </section>
         <section className="table-container">
           <Table loading={loading} rowSelection={rowSelection} columns={columns} dataSource={data}></Table>
         </section>
+        <Modal title={DIALOG_TYPE[type]} visible={visible} confirmLoading={confirmLoading} onCancel={this.closeDialog} width={640} maskClosable={false}>
+          <DialogForm></DialogForm>
+        </Modal>
       </section>
     )
   }

@@ -17,7 +17,22 @@
     }
   }
 
+  .header-button-container {
+    margin-bottom: 20px;
+
+    .ant-btn + .ant-btn {
+      margin-left: 16px;
+    }
+  }
+
   .table-container {
     margin-bottom: -20px;
+  }
+
+  .dialog-form-container {
+    .form textarea.ant-input {
+      height: 80px;
+      resize: none;
+    }
   }
 }
