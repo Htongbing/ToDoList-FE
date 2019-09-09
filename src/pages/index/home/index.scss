@@ -28,11 +28,15 @@
   .table-container {
     margin-bottom: -20px;
   }
+}
 
-  .dialog-form-container {
-    .form textarea.ant-input {
-      height: 80px;
-      resize: none;
-    }
+.dialog-form-container {
+  form textarea.ant-input.dialog-textarea {
+    height: 80px;
+    resize: none;
+  }
+  
+  .dialog-picker {
+    width: 100%;
   }
 }

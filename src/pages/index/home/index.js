@@ -92,7 +92,13 @@ class Dialog extends Component {
                 { required: true, message: '请输入任务内容' },
                 { pattern: TASK_CONTENT_RE, message: '任务内容不能包含特殊符号，且不能超过20个字符' }
               ]
-            })(<Input.TextArea placeholder="请输入任务内容"/>)}
+            })(<Input.TextArea className="dialog-textarea" placeholder="请输入任务内容"/>)}
+          </Form.Item>
+          <Form.Item label="预计完成时间">
+            {getFieldDecorator('estimatedTime')(<DatePicker allowClear className="dialog-picker" format="YYYY-MM-DD HH:mm:ss" showTime></DatePicker>)}
+          </Form.Item>
+          <Form.Item label="备注">
+            {getFieldDecorator('remark')(<Input placeholder="请输入备注"/>)}
           </Form.Item>
         </Form>
       </section>
@@ -182,6 +188,26 @@ class Home extends Component {
         visible: false
       }
     })
+    this.refs.dialogForm.resetFields()
+  }
+  validateFields = () => {
+    return new Promise((resolve, reject) => {
+      this.refs.dialogForm.validateFields((err, values) => !err ? resolve(values) : reject(err))
+    })
+  }
+  confirm = async () => {
+    try {
+      const values = await this.validateFields()
+      console.log(values)
+    } catch (e) {
+      const { dialog } = this.state
+      dialog.confirmLoading && this.setState({
+        dialog: {
+          ...dialog,
+          confirmLoading: false
+        }
+      })
+    }
   }
   render() {
     const { columns, data, rowSelection, loading, dialog: {type, visible, confirmLoading} } = this.state
@@ -195,8 +221,8 @@ class Home extends Component {
         <section className="table-container">
           <Table loading={loading} rowSelection={rowSelection} columns={columns} dataSource={data}></Table>
         </section>
-        <Modal title={DIALOG_TYPE[type]} visible={visible} confirmLoading={confirmLoading} onCancel={this.closeDialog} width={640} maskClosable={false}>
-          <DialogForm></DialogForm>
+        <Modal title={DIALOG_TYPE[type]} visible={visible} confirmLoading={confirmLoading} onCancel={this.closeDialog} width={640} maskClosable={false} onOk={this.confirm}>
+          <DialogForm ref="dialogForm"></DialogForm>
         </Modal>
       </section>
     )
