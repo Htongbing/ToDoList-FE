@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
-import { Form, Input, Select, DatePicker, Button, Table, Modal } from 'antd'
-import { getTaskList } from '../../../api'
+import { Form, Input, Select, DatePicker, Button, Table, Modal, message } from 'antd'
+import { getTaskList, createTask, finishTask, updateTask, deleteTasks } from '../../../api'
 import { TASK_NAME_RE, TASK_CONTENT_RE } from '../../../const'
 import moment from 'moment'
 import 'moment/locale/zh-cn'
@@ -19,6 +19,7 @@ const DIALOG_TYPE = {
   edit: '修改',
   view: '查看'
 }
+const { confirm } = Modal;
 
 class Search extends Component {
   search = () => {
@@ -74,7 +75,7 @@ const SearchForm = Form.create({
 
 class Dialog extends Component {
   render() {
-    const { getFieldDecorator } = this.props.form
+    const { type, data, form: { getFieldDecorator } } = this.props
     return (
       <section className="dialog-form-container">
         <Form labelCol={{ span: 4 }} wrapperCol={{ span: 20 }}>
@@ -83,22 +84,28 @@ class Dialog extends Component {
               rules: [
                 { required: true, message: '请输入任务名称' },
                 { pattern: TASK_NAME_RE, message: '任务名称不能包含特殊符号，且不能超过20个字符' }
-              ]
-            })(<Input placeholder="请输入任务名称"/>)}
+              ],
+              initialValue: data && data.name
+            })(<Input disabled={type === 'view'} placeholder="请输入任务名称"/>)}
           </Form.Item>
           <Form.Item label="任务内容">
             {getFieldDecorator('content', {
               rules: [
                 { required: true, message: '请输入任务内容' },
                 { pattern: TASK_CONTENT_RE, message: '任务内容不能包含特殊符号，且不能超过20个字符' }
-              ]
-            })(<Input.TextArea className="dialog-textarea" placeholder="请输入任务内容"/>)}
+              ],
+              initialValue: data && data.content
+            })(<Input.TextArea disabled={type === 'edit' || type === 'view'} className="dialog-textarea" placeholder="请输入任务内容"/>)}
           </Form.Item>
           <Form.Item label="预计完成时间">
-            {getFieldDecorator('estimatedTime')(<DatePicker allowClear className="dialog-picker" format="YYYY-MM-DD HH:mm:ss" showTime></DatePicker>)}
+            {getFieldDecorator('estimatedTime', {
+              initialValue: data && data.estimatedTime && moment(data.estimatedTime)
+            })(<DatePicker disabled={type === 'edit' || type === 'view'} allowClear className="dialog-picker" format="YYYY-MM-DD HH:mm:ss" showTime></DatePicker>)}
           </Form.Item>
           <Form.Item label="备注">
-            {getFieldDecorator('remark')(<Input placeholder="请输入备注"/>)}
+            {getFieldDecorator('remark', {
+              initialValue: data && data.remark
+            })(<Input disabled={type === 'view'} placeholder="请输入备注"/>)}
           </Form.Item>
         </Form>
       </section>
@@ -135,7 +142,7 @@ class Home extends Component {
         title: '预计完成时间',
         dataIndex: 'estimatedTime',
         key: 'estimatedTime',
-        render: time => moment(time).format('YYYY-MM-DD HH:mm:ss')
+        render: time => time && moment(time).format('YYYY-MM-DD HH:mm:ss')
       },
       {
         title: '任务状态',
@@ -146,16 +153,33 @@ class Home extends Component {
         )
       },
       {
+        title: '备注',
+        dataIndex: 'remark',
+        key: 'remark'
+      },
+      {
         title: '操作',
         key: 'operate',
-        render: () => (
-          <Button type="link">修改</Button>
-        )
+        render: (text, row) => {
+          const { status, id } = row
+          return (
+            <div className="operate-container">
+              <Button type="link" onClick={() => { this.openDialog('view', row) }}>查看</Button>
+              <Button type="link" onClick={() => { this.openDialog('edit', row) }}>修改</Button>
+              {status !== 1 ? <Button type="link" onClick={() => { this.finishTask(id) }}>完成</Button> : ''}
+            </div>
+          )
+        }
       }
     ],
     data: [],
-    rowSelection: {},
-    dialog: {}
+    rowSelection: {
+      onChange: selectedRowKeys => {
+        this.setState({ selectedRowKeys })
+      }
+    },
+    dialog: {},
+    selectedRowKeys: []
   }
   componentDidMount() {
     this.getList()
@@ -164,8 +188,8 @@ class Home extends Component {
     this.setState({ loading: true })
     try {
       const { data } = await getTaskList(this.state.searchParams)
-      data.forEach((item, index) => {
-        item.key = index
+      data.forEach(item => {
+        item.key = item.id
       })
       this.setState({ data })
     } catch (e) {}
@@ -176,12 +200,11 @@ class Home extends Component {
       this.getList()
     })
   }
-  openDialog = type => {
-    this.setState({ dialog: { type, visible: true } })
+  openDialog = (type, row = null) => {
+    this.setState({ dialog: { type, visible: true, row } })
   }
   closeDialog = () => {
     const { dialog } = this.state
-    if (dialog.confirmLoading) return
     this.setState({
       dialog: {
         ...dialog,
@@ -192,37 +215,80 @@ class Home extends Component {
   }
   validateFields = () => {
     return new Promise((resolve, reject) => {
-      this.refs.dialogForm.validateFields((err, values) => !err ? resolve(values) : reject(err))
+      this.refs.dialogForm.validateFields((err, values) => {
+        if (err) return reject(err)
+        const { estimatedTime } = values
+        estimatedTime && (values.estimatedTime = + new Date(estimatedTime))
+        resolve(values)
+      })
     })
   }
   confirm = async () => {
+    const { dialog } = this.state
     try {
       const values = await this.validateFields()
-      console.log(values)
-    } catch (e) {
-      const { dialog } = this.state
-      dialog.confirmLoading && this.setState({
+      this.setState({
         dialog: {
           ...dialog,
-          confirmLoading: false
+          confirmLoading: true
         }
       })
-    }
+      if (dialog.type === 'add') {
+        await createTask(values)
+      } else {
+        await updateTask({
+          id: dialog.row.id,
+          data: values
+        })
+      }
+      this.success()
+      this.closeDialog()
+    } catch (e) {}
+    dialog.confirmLoading && this.setState({
+      dialog: {
+        ...dialog,
+        confirmLoading: false
+      }
+    })
+  }
+  finishTask = id => {
+    confirm({
+      title: '提示',
+      content: '确定要完成吗？',
+      onOk: async () => {
+        await finishTask(id)
+        this.success()
+      }
+    })
+  }
+  deleteTasks = () => {
+    confirm({
+      title: '提示',
+      content: '确定要删除吗？',
+      onOk: async () => {
+        await deleteTasks(this.state.selectedRowKeys.join(','))
+        this.success()
+      }
+    })
+  }
+  success = () => {
+    message.success('操作成功')
+    this.getList()
   }
   render() {
-    const { columns, data, rowSelection, loading, dialog: {type, visible, confirmLoading} } = this.state
+    const { columns, data, rowSelection, loading, dialog: {type, visible, confirmLoading, row}, selectedRowKeys } = this.state
     return (
       <section className="home-container">
         <SearchForm search={this.search}></SearchForm>
         <section className="header-button-container">
           <Button type="primary" onClick={() => { this.openDialog('add') }}>添加</Button>
-          <Button type="danger">删除</Button>
+          <Button type="danger" disabled={!selectedRowKeys.length} onClick={this.deleteTasks}>删除</Button>
         </section>
         <section className="table-container">
           <Table loading={loading} rowSelection={rowSelection} columns={columns} dataSource={data}></Table>
         </section>
-        <Modal title={DIALOG_TYPE[type]} visible={visible} confirmLoading={confirmLoading} onCancel={this.closeDialog} width={640} maskClosable={false} onOk={this.confirm}>
-          <DialogForm ref="dialogForm"></DialogForm>
+        <Modal title={DIALOG_TYPE[type]} visible={visible} confirmLoading={confirmLoading} onCancel={this.closeDialog} width={640} maskClosable={false} onOk={this.confirm} {...type === 'view' ? { footer: null } : null}>
+          <DialogForm ref="dialogForm" data={row} type={type}></DialogForm>
         </Modal>
       </section>
     )

@@ -27,6 +27,15 @@
 
   .table-container {
     margin-bottom: -20px;
+
+    .operate-container {
+      .ant-btn {
+        padding: 0;
+        & + .ant-btn {
+          margin-left: 16px;
+        }
+      }
+    }
   }
 }
 
