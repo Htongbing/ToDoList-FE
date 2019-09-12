@@ -173,6 +173,11 @@ class Home extends Component {
       }
     ],
     data: [],
+    pageAttrs: {
+      page: 1,
+      count: 10,
+      pageSize: 10
+    },
     rowSelection: {
       onChange: selectedRowKeys => {
         this.setState({ selectedRowKeys })
@@ -187,11 +192,12 @@ class Home extends Component {
   getList = async () => {
     this.setState({ loading: true })
     try {
-      const { data } = await getTaskList(this.state.searchParams)
+      const { searchParams, pageAttrs } = this.state
+      const { data, ...rest } = await getTaskList({ ...searchParams, ...pageAttrs })
       data.forEach(item => {
         item.key = item.id
       })
-      this.setState({ data })
+      this.setState({ data, pageAttrs: rest })
     } catch (e) {}
     this.setState({ loading: false })
   }
@@ -276,7 +282,7 @@ class Home extends Component {
     this.getList()
   }
   render() {
-    const { columns, data, rowSelection, loading, dialog: {type, visible, confirmLoading, row}, selectedRowKeys } = this.state
+    const { columns, data, rowSelection, loading, dialog: {type, visible, confirmLoading, row}, selectedRowKeys, pageAttrs: { count, pageSize, page } } = this.state
     return (
       <section className="home-container">
         <SearchForm search={this.search}></SearchForm>
@@ -285,7 +291,15 @@ class Home extends Component {
           <Button type="danger" disabled={!selectedRowKeys.length} onClick={this.deleteTasks}>删除</Button>
         </section>
         <section className="table-container">
-          <Table loading={loading} rowSelection={rowSelection} columns={columns} dataSource={data}></Table>
+          <Table loading={loading} rowSelection={rowSelection} columns={columns} dataSource={data} pagination={{
+            size: 'small',
+            current: page,
+            total: count,
+            showSizeChanger: true,
+            pageSize,
+            showQuickJumper: true,
+            showTotal: total => `共 ${total} 条数据`
+          }}></Table>
         </section>
         <Modal title={DIALOG_TYPE[type]} visible={visible} confirmLoading={confirmLoading} onCancel={this.closeDialog} width={640} maskClosable={false} onOk={this.confirm} {...type === 'view' ? { footer: null } : null}>
           <DialogForm ref="dialogForm" data={row} type={type}></DialogForm>
