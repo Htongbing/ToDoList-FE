@@ -92,7 +92,7 @@ class Dialog extends Component {
             {getFieldDecorator('content', {
               rules: [
                 { required: true, message: '请输入任务内容' },
-                { pattern: TASK_CONTENT_RE, message: '任务内容不能包含特殊符号，且不能超过20个字符' }
+                { pattern: TASK_CONTENT_RE, message: '任务内容不能超过200个字符' }
               ],
               initialValue: data && data.content
             })(<Input.TextArea disabled={type === 'edit' || type === 'view'} className="dialog-textarea" placeholder="请输入任务内容"/>)}
@@ -125,24 +125,28 @@ class Home extends Component {
       {
         title: '任务名称',
         dataIndex: 'name',
-        key: 'name'
+        key: 'name',
+        className: 'table-width'
       },
       {
         title: '任务内容',
         dataIndex: 'content',
-        key: 'content'
+        key: 'content',
+        className: 'table-width'
       },
       {
         title: '创建时间',
         dataIndex: 'createdTime',
         key: 'createdTime',
-        render: time => moment(time).format('YYYY-MM-DD HH:mm:ss')
+        render: time => moment(time).format('YYYY-MM-DD HH:mm:ss'),
+        className: 'table-width'
       },
       {
         title: '预计完成时间',
         dataIndex: 'estimatedTime',
         key: 'estimatedTime',
-        render: time => time && moment(time).format('YYYY-MM-DD HH:mm:ss')
+        render: time => time && moment(time).format('YYYY-MM-DD HH:mm:ss'),
+        className: 'table-width'
       },
       {
         title: '任务状态',
@@ -150,12 +154,14 @@ class Home extends Component {
         key: 'status',
         render: status => (
           <div className={`status status-${status}`}>{STATUS[status]}</div>
-        )
+        ),
+        className: 'table-width'
       },
       {
         title: '备注',
         dataIndex: 'remark',
-        key: 'remark'
+        key: 'remark',
+        className: 'table-width'
       },
       {
         title: '操作',
@@ -169,7 +175,8 @@ class Home extends Component {
               {status !== 1 ? <Button type="link" onClick={() => { this.finishTask(id) }}>完成</Button> : ''}
             </div>
           )
-        }
+        },
+        width: 180
       }
     ],
     data: [],
@@ -202,7 +209,13 @@ class Home extends Component {
     this.setState({ loading: false })
   }
   search = data => {
-    this.setState({ searchParams: data }, () => {
+    this.setState({ 
+      searchParams: data,
+      pageAttrs: {
+        ...this.state.pageAttrs,
+        page: 1
+      } 
+    }, () => {
       this.getList()
     })
   }
@@ -282,9 +295,14 @@ class Home extends Component {
     this.getList()
   }
   render() {
-    const { columns, data, rowSelection, loading, dialog: {type, visible, confirmLoading, row}, selectedRowKeys, pageAttrs: { count, pageSize, page } } = this.state
+    const { columns, data, rowSelection, loading, dialog: {type, visible, confirmLoading, row}, selectedRowKeys, pageAttrs } = this.state
+    const { count, pageSize, page } = pageAttrs
     return (
       <section className="home-container">
+        <section className="statistics-container">
+          <div className="statistics-item-container"></div>
+          <div className="statistics-item-container"></div>
+        </section>
         <SearchForm search={this.search}></SearchForm>
         <section className="header-button-container">
           <Button type="primary" onClick={() => { this.openDialog('add') }}>添加</Button>
@@ -298,7 +316,28 @@ class Home extends Component {
             showSizeChanger: true,
             pageSize,
             showQuickJumper: true,
-            showTotal: total => `共 ${total} 条数据`
+            showTotal: total => `共 ${total} 条数据`,
+            onChange: page => {
+              this.setState({
+                pageAttrs: {
+                  ...pageAttrs,
+                  page
+                }
+              }, () => {
+                this.getList()
+              })
+            },
+            onShowSizeChange: (current, pageSize) => {
+              this.setState({
+                pageAttrs: {
+                  count,
+                  pageSize,
+                  page: 1
+                }
+              }, () => {
+                this.getList()
+              })
+            }
           }}></Table>
         </section>
         <Modal title={DIALOG_TYPE[type]} visible={visible} confirmLoading={confirmLoading} onCancel={this.closeDialog} width={640} maskClosable={false} onOk={this.confirm} {...type === 'view' ? { footer: null } : null}>
