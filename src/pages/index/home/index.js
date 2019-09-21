@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import { Form, Input, Select, DatePicker, Button, Table, Modal, message } from 'antd'
-import { getTaskList, createTask, finishTask, updateTask, deleteTasks } from '../../../api'
+import Pie from '../../../components/pie'
+import { getTaskList, createTask, finishTask, updateTask, deleteTasks, getStatistics } from '../../../api'
 import { TASK_NAME_RE, TASK_CONTENT_RE } from '../../../const'
 import moment from 'moment'
 import 'moment/locale/zh-cn'
@@ -119,6 +120,9 @@ const DialogForm = Form.create({
 
 class Home extends Component {
   state = {
+    pieLegend: Object.values(STATUS),
+    curStatistics: [],
+    allStatistics: [],
     searchParams: {},
     loading: false,
     columns: [
@@ -294,14 +298,36 @@ class Home extends Component {
     message.success('操作成功')
     this.getList()
   }
+  getCurStatistics = async params => {
+    const values = await getStatistics(params)
+    this.setState({
+      curStatistics: values.map(({ status, total }) => ({
+        name: STATUS[status],
+        value: total
+      }))
+    })
+  }
+  getAllStatistics = async () => {
+    const values = await getStatistics()
+    this.setState({
+      allStatistics: values.map(({ status, total }) => ({
+        name: STATUS[status],
+        value: total
+      }))
+    })
+  }
   render() {
-    const { columns, data, rowSelection, loading, dialog: {type, visible, confirmLoading, row}, selectedRowKeys, pageAttrs } = this.state
+    const { columns, data, rowSelection, loading, dialog: {type, visible, confirmLoading, row}, selectedRowKeys, pageAttrs, pieLegend, curStatistics, allStatistics } = this.state
     const { count, pageSize, page } = pageAttrs
     return (
       <section className="home-container">
         <section className="statistics-container">
-          <div className="statistics-item-container"></div>
-          <div className="statistics-item-container"></div>
+          <div className="statistics-item-container">
+            <Pie data={curStatistics} legend={pieLegend} name="任务当前完成情况" style={{height: '100%'}} getData={this.getCurStatistics} showDate></Pie>
+          </div>
+          <div className="statistics-item-container">
+            <Pie data={allStatistics} legend={pieLegend} name="任务总体完成情况" style={{height: '100%'}} getData={this.getAllStatistics}></Pie>
+          </div>
         </section>
         <SearchForm search={this.search}></SearchForm>
         <section className="header-button-container">

@@ -27,3 +27,5 @@ export const updateTask = ({id, data}) => axios.put(`/tasks/${id}`, data)
 export const deleteTasks = ids => axios.delete(`/tasks/${ids}`)
 
 export const finishTask = id => axios.post('/tasks/finish', { id })
+
+export const getStatistics = params => axios.get('/tasks/statistics', { params })
