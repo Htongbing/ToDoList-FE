@@ -14,7 +14,10 @@ moment.locale('zh-cn')
 class Pie extends Component {
   state = {
     showLoading: false,
-    params: {}
+    params: {
+      startTime: + new Date(moment(new Date()).format('YYYY-MM-DD [00:00:00]')),
+      endTime: + new Date(moment(new Date()).format('YYYY-MM-DD [00:00:00]')) + 8.64e7 - 1000
+    }
   }
   componentDidMount() {
     const { getData } = this.props
@@ -79,11 +82,12 @@ class Pie extends Component {
   }
   render() {
     const { style, showDate } = this.props
-    const { showLoading } = this.state
+    const { showLoading, params: {startTime, endTime} } = this.state
+    const defaultDate = [moment(startTime), moment(endTime)]
     return (
       <section className="pie-container">
         {showDate ? <section className="search-time-container">
-          <DatePicker.RangePicker size="small" allowClear format="YYYY-MM-DD" onChange={this.changeDate}></DatePicker.RangePicker>
+          <DatePicker.RangePicker defaultValue={defaultDate} size="small" allowClear format="YYYY-MM-DD" onChange={this.changeDate}></DatePicker.RangePicker>
         </section> : null}
         <section className={`chart-container${showDate ? '' : ' no-search'}`}>
           <ReactEchartsCore echarts={echarts} option={this.getOption()} style={style} showLoading={showLoading}></ReactEchartsCore>

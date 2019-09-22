@@ -29,3 +29,7 @@ export const deleteTasks = ids => axios.delete(`/tasks/${ids}`)
 export const finishTask = id => axios.post('/tasks/finish', { id })
 
 export const getStatistics = params => axios.get('/tasks/statistics', { params })
+
+export const getUserSetting = () => axios.get('/users/noticeSetting')
+
+export const setUserSetting = data => axios.put('/users/noticeSetting', data)
