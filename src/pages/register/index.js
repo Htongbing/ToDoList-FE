@@ -51,9 +51,9 @@ class Register extends Component {
     })
   }
   register = async () => {
-    this.setState({ loading: true })
     try {
       const values = await this.validateFields()
+      this.setState({ loading: true })
       await register(values)
       message.success('注册成功')
       this.props.history.push('/login')

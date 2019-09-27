@@ -4,6 +4,8 @@ import Login from './pages/login'
 import Register from './pages/register'
 import Index from './pages/index'
 import EmailCheck from './pages/email-check'
+import Forgot from './pages/forgot'
+import ResetPassword from './pages/reset-password'
 
 const homeChlidren = ['home', 'setting'].join('|')
 
@@ -13,6 +15,8 @@ function App() {
       <Intercept path={`/(${homeChlidren})?`} exact component={Index}></Intercept>
       <Route path="/login" exact component={Login}></Route>
       <Route path="/register" exact component={Register}></Route>
+      <Route path="/forgot" exact component={Forgot}></Route>
+      <Route path="/reset-password" exact component={ResetPassword}></Route>
       <EmailIntercept path="/email-check" exact component={EmailCheck}></EmailIntercept>
     </Router>
   )

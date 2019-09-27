@@ -15,8 +15,10 @@ class CountButton extends Component {
     const { clickBtn, timing = 60 } = this.props
     try {
       await clickBtn()
-    } catch (e) {}
-    this.setState({ status: 'timing', timing: Date.now() + timing * 1000 })
+      this.setState({ status: 'timing', timing: Date.now() + timing * 1000 })
+    } catch (e) {
+      this.setState({ status: 'normal' })
+    }
   }
   render() {
     const { status, timing } = this.state

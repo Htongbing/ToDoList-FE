@@ -3,6 +3,7 @@ import { Form, Input, Button, message } from 'antd'
 import './index.scss'
 import { verifyEmail, sendCode } from '../../api'
 import CountButton from '../../components/count-button'
+
 class EmailCheck extends Component {
   state = {
     loading: false,
@@ -12,8 +13,11 @@ class EmailCheck extends Component {
     try {
       this.setState({ sendLoading: true })
       await sendCode()
-    } catch (e) {}
-    this.setState({ sendLoading: false })
+    } catch (e) {
+      return Promise.reject(e)
+    } finally {
+      this.setState({ sendLoading: false })
+    }
   }
   handleKeyUp = e => {
     if (e.keyCode !== 13 || this.state.loading) return
@@ -32,7 +36,7 @@ class EmailCheck extends Component {
       message.success('验证成功')
       sessionStorage.setItem('token', token)
       sessionStorage.setItem('emailStatus', '1')
-      this.props.history.push('/')
+      this.props.history.push('/home')
     } catch (e) {
       e instanceof Error && this.setState({ loading: false })
     }

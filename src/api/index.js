@@ -33,3 +33,7 @@ export const getStatistics = params => axios.get('/tasks/statistics', { params }
 export const getUserSetting = () => axios.get('/users/noticeSetting')
 
 export const setUserSetting = data => axios.put('/users/noticeSetting', data)
+
+export const getForgotEmail = username => axios.post('/email/forgot', { username })
+
+export const resetPassword = password => axios.put('/users/resetPassword', { password })
