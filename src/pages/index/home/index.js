@@ -105,6 +105,9 @@ class Dialog extends Component {
           </Form.Item>
           <Form.Item label="备注">
             {getFieldDecorator('remark', {
+              rules: [
+                { pattern: TASK_CONTENT_RE, message: '备注不能超过200个字符' }
+              ],
               initialValue: data && data.remark
             })(<Input disabled={type === 'view'} placeholder="请输入备注"/>)}
           </Form.Item>
@@ -130,27 +133,31 @@ class Home extends Component {
         title: '任务名称',
         dataIndex: 'name',
         key: 'name',
-        className: 'table-width'
+        fixed: 'left',
+        width: 180,
+        className: 'table-cell'
       },
       {
         title: '任务内容',
         dataIndex: 'content',
         key: 'content',
-        className: 'table-width'
+        className: 'table-cell max-width'
       },
       {
         title: '创建时间',
         dataIndex: 'createdTime',
         key: 'createdTime',
         render: time => moment(time).format('YYYY-MM-DD HH:mm:ss'),
-        className: 'table-width'
+        width: 180,
+        className: 'table-cell'
       },
       {
         title: '预计完成时间',
         dataIndex: 'estimatedTime',
         key: 'estimatedTime',
         render: time => time && moment(time).format('YYYY-MM-DD HH:mm:ss'),
-        className: 'table-width'
+        className: 'table-cell',
+        width: 180
       },
       {
         title: '任务状态',
@@ -159,13 +166,15 @@ class Home extends Component {
         render: status => (
           <div className={`status status-${status}`}>{STATUS[status]}</div>
         ),
-        className: 'table-width'
+        className: 'table-cell',
+        width: 180,
       },
       {
         title: '备注',
         dataIndex: 'remark',
         key: 'remark',
-        className: 'table-width'
+        className: 'table-cell max-width',
+        width: 180,
       },
       {
         title: '操作',
@@ -180,7 +189,9 @@ class Home extends Component {
             </div>
           )
         },
-        width: 180
+        fixed: 'right',
+        className: 'table-cell',
+        width: 180,
       }
     ],
     data: [],
@@ -231,7 +242,8 @@ class Home extends Component {
     this.setState({
       dialog: {
         ...dialog,
-        visible: false
+        visible: false,
+        confirmLoading: false
       }
     })
     this.refs.dialogForm.resetFields()
@@ -266,13 +278,14 @@ class Home extends Component {
       }
       this.success()
       this.closeDialog()
-    } catch (e) {}
-    dialog.confirmLoading && this.setState({
-      dialog: {
-        ...dialog,
-        confirmLoading: false
-      }
-    })
+    } catch (e) {
+      e instanceof Error && this.setState({
+        dialog: {
+          ...dialog,
+          confirmLoading: false
+        }
+      })
+    }
   }
   finishTask = id => {
     confirm({
@@ -364,7 +377,7 @@ class Home extends Component {
                 this.getList()
               })
             }
-          }}></Table>
+          }} scroll={{ x: 'max-content' }}></Table>
         </section>
         <Modal title={DIALOG_TYPE[type]} visible={visible} confirmLoading={confirmLoading} onCancel={this.closeDialog} width={640} maskClosable={false} onOk={this.confirm} {...type === 'view' ? { footer: null } : null}>
           <DialogForm ref="dialogForm" data={row} type={type}></DialogForm>

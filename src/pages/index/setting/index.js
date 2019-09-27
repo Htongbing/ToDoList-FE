@@ -17,13 +17,16 @@ class Setting extends Component {
   timeValidate = (rule, value, cb) => !!this.state.needNotice && !value ? cb(new Error()) : cb()
   changeRadio = ({ target: { value } }) => {
     this.setState({ needNotice: value }, () => {
-      this.props.form.validateFields(['noticeTime'], () => {})
+      const form = this.props.form
+      !value && form.setFieldsValue({ noticeTime: null })
+      form.validateFields(['noticeTime'], () => {})
     })
   }
   getUserSetting = async () => {
     this.setState({ loading: true })
     try {
-      await getUserSetting()
+      const { needNotice, noticeTime } = await getUserSetting()
+      this.setState({ needNotice, noticeTime })
     } catch (e) {}
     this.setState({ loading: false })
   }
@@ -35,11 +38,11 @@ class Setting extends Component {
   save = async () => {
     try {
       const values = await this.verify()
-      values.noticeTime = moment(values.noticeTime).format('HH:mm')
+      values.noticeTime = values.noticeTime && moment(values.noticeTime).format('HH:mm')
       this.setState({ btnLoading: true })
       await setUserSetting(values)
       message.success('操作成功')
-      this.getUserSetting()
+      this.setState({ btnLoading: false })
     } catch (e) {
       e instanceof Error && this.setState({ btnLoading: false })
     }
@@ -63,7 +66,7 @@ class Setting extends Component {
           </Form.Item>
           <Form.Item label="提醒时间" labelCol={{ span: 6 }} wrapperCol={{ span: 18 }}>
             {getFieldDecorator('noticeTime', {
-              initialValue: noticeTime,
+              initialValue: noticeTime && moment(noticeTime, 'HH:mm'),
               rules: [
                 { required: true, message: '请选择时间', validator: this.timeValidate }
               ]

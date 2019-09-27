@@ -1,7 +1,6 @@
 .home-container {
   padding: 20px;
   min-height: 100%;
-  overflow: hidden;
   background-color: #fff;
 
   .search-container {
@@ -28,15 +27,6 @@
   }
 
   .table-container {
-    @media screen and (max-width: 1236px) {
-      height: calc(100% - 152px);
-    }
-
-    overflow: auto;
-
-    .ant-table-wrapper {
-      min-width: 1440px;
-    }
 
     .operate-container {
       .ant-btn {
@@ -47,15 +37,14 @@
       }
     }
 
-    table {
-      table-layout: fixed;
-    }
-
-    .table-width {
-      width: 200px;
+    .table-cell {
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+    }
+
+    .max-width {
+      max-width: 300px;
     }
   }
 

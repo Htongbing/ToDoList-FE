@@ -25,7 +25,7 @@ class Login extends Component {
       sessionStorage.setItem('username', account)
       sessionStorage.setItem('emailStatus', emailStatus)
       sessionStorage.setItem('userId', id)
-      this.props.history.push('/')
+      this.props.history.push('/home')
     } catch (e) {
       e instanceof Error && this.setState({ loading: false })
     }

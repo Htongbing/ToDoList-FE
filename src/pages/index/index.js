@@ -30,9 +30,6 @@ class Index extends Component {
     sessionStorage.removeItem('token')
     this.props.history.push('/login')
   }
-  componentDidMount() {
-    this.jump('/home')
-  }
   render() {
     const { location } = this.props
     const { routes, username } = this.state
