@@ -1,0 +1,19 @@
+.pie-container {
+  position: relative;
+  height: 100%;
+
+  .chart-container {
+    height: calc(100% - 24px);
+    &.no-search {
+      height: 100%;
+    }
+  }
+
+  .refresh {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    cursor: pointer;
+    color: #aaa;
+  }
+}

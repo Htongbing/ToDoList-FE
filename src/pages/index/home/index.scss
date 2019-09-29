@@ -1,0 +1,75 @@
+.home-container {
+  padding: 20px;
+  min-height: 100%;
+  background-color: #fff;
+
+  .search-container {
+    .ant-form-item {
+      margin-bottom: 20px;
+    }
+    
+    .ant-btn + .ant-btn {
+      margin-left: 16px;
+    }
+
+    .ant-input:not(.ant-calendar-picker-input),
+    .ant-select {
+      width: 200px;
+    }
+  }
+
+  .header-button-container {
+    margin-bottom: 20px;
+
+    .ant-btn + .ant-btn {
+      margin-left: 16px;
+    }
+  }
+
+  .table-container {
+
+    .operate-container {
+      .ant-btn {
+        padding: 0;
+        & + .ant-btn {
+          margin-left: 16px;
+        }
+      }
+    }
+
+    .table-cell {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .max-width {
+      max-width: 300px;
+    }
+  }
+
+  .statistics-container {
+    height: 180px;
+    margin-bottom: 20px;
+    display: flex;
+  }
+
+  .statistics-item-container {
+    width: 49%;
+    height: 100%;
+    & + .statistics-item-container {
+      margin-left: 2%;
+    }
+  }
+}
+
+.dialog-form-container {
+  form textarea.ant-input.dialog-textarea {
+    height: 80px;
+    resize: none;
+  }
+  
+  .dialog-picker {
+    width: 100%;
+  }
+}

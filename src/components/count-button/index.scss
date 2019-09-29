@@ -1,0 +1,26 @@
+.count-button-container {
+  width: 70px;
+  height: 100%;
+
+  .ant-btn {
+    padding: 0;
+    &.ant-btn-loading:not(.ant-btn-circle):not(.ant-btn-circle-outline):not(.ant-btn-icon-only) {
+      padding-left: 0;
+    }
+    &::before {
+      background-color: transparent;
+    }
+  }
+
+  .timing {
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: not-allowed;
+    .ant-statistic-content {
+      font-size: 14px;
+      color: #ccc;
+    }
+  }
+}
