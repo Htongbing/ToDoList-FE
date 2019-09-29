@@ -1,0 +1,33 @@
+.reset-password-container {
+  width: 460px;
+  padding: 20px;
+  border: 1px solid #ebeef5;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px 0 rgba(0,0,0,.1);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
+  > img {
+    display: block;
+    margin: 10px auto 20px;
+  }
+
+  .form-container {
+    width: 400px;
+    margin: 0 auto;
+  }
+
+  .ant-form-item-label {
+    line-height: 24px;
+  }
+
+  .ant-form-item {
+    margin-bottom: 19px;
+    &.ant-form-item-with-help {
+      margin-bottom: 0;
+    }
+  }
+  
+}

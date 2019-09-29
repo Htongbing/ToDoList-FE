@@ -3,11 +3,16 @@ import { Form, Input, Button, message } from 'antd'
 import './index.scss'
 import { resetPassword } from '../../api'
 import { PASSWORD_RE } from '../../const'
+import { formatSearch } from '../../utils'
 
 class ResetPassword extends Component {
   state = {
     loading: false,
     confirmDirty: false,
+  }
+  componentDidMount() {
+    const { token } = formatSearch(this.props.location.search)
+    sessionStorage.setItem('token', token)
   }
   resetPassword = async () => {
     try {
