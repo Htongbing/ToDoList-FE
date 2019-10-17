@@ -17,9 +17,9 @@ class Login extends Component {
     this.login()
   }
   login = async () => {
-    this.setState({ loading: true })
     try {
       const values = await this.validateFields()
+      this.setState({ loading: true })
       const { token, account, emailStatus, id } = await login(values)
       sessionStorage.setItem('token', token)
       sessionStorage.setItem('username', account)
